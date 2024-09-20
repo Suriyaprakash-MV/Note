@@ -1,4 +1,4 @@
-import React, {useRef} from 'react'
+import React, {useEffect, useRef} from 'react'
 import { FaPlus } from 'react-icons/fa'
 
 const AddItem = ({newItem, setNewItem, handleSubmit}) => {
@@ -8,8 +8,6 @@ const AddItem = ({newItem, setNewItem, handleSubmit}) => {
     handleSubmit(e);
     inputRef.current.focus();
   };
-
-
 
   return (
     <form className='addForm' onSubmit = {onSubmit}>  

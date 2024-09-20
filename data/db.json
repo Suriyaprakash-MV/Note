@@ -1,0 +1,20 @@
+{
+    "items": [
+        {
+            "id": 1,
+            "checked" : false,
+            "item" : "summercool.com"
+        },
+        {
+            "id": 2,
+            "checked" : false,
+            "item" : "Blockchain"
+        },
+        {
+            "id": 3,
+            "checked" : false,
+            "item" : "AIML"
+        }
+
+    ]
+}

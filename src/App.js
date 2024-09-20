@@ -1,76 +1,100 @@
 import Header from "./Header";
 import Content from "./Content";
 import Footer from "./Footer";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddItem from "./AddItem";
 import SearchItem from "./SearchItem";
 
 
 function App() {
+  // Initialize items with a fallback to an empty array if localStorage has no value
+  const API_URL = 'http://localhost:3500/itemss';
+  const [items, setItems] = useState([]);
 
-  const [items, setItems] = useState(JSON.parse
-  (localStorage.getItem('todo_list'))
-   );
+  const [newItem, setNewItem] = useState('');
+  const [search, setSearch] = useState('');
+  const [fetchError, setFetchError] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-    const [newItem, setNewItem] = useState('')
-    const [search, setSearch] = useState('')
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw Error ("Data not received")
+        const listItems = await response.json();
+        console.log(listItems);
+        setItems(listItems);
+        setFetchError(null)
+      } catch(err){
+        setFetchError(err)
+      } finally  {
+        setIsLoading(false)
+      }
+    }  
+    setTimeout(() => {
+      (async () => await fetchItems())()
+    },3000)
+  },[])
+    // const savedItems = {The comment statement are the statement used to save the data even the page is refreshed}
+    // JSON.parse(localStorage.getItem('todo_list'));
+    // if(savedItems){
+    //   setItems(savedItems);
+    // }
+  // },[])
 
-    const addItem = (item) => {
-      const id = items.length ? items[items.length - 1].id + 1 : 1;
-      const addNewItem = {id, checked: false, item};
-      const listItems = [...items, addNewItem];
-      setItems(listItems)
-      localStorage.setItem("todo_list", JSON.stringify(listItems));
-    };
+  const addItem = (item) => {
+    const id = items.length ? items[items.length - 1].id + 1 : 1;
+    const addNewItem = { id, checked: false, item };
+    const listItems = [...items, addNewItem];
+    setItems(listItems);
+  };
 
-    const numbers = [-2, -1, 0, 1, 2];
-    const itemss = numbers.filter(n => n >= 0).map (n => ({number: n}));
-    console.log(itemss);
+  const handleCheck = (id) => {
+    const listItems = items.map((item) =>
+      item.id === id ? { ...item, checked: !item.checked } : item
+    );
+    setItems(listItems);
+  };
 
-    const handleCheck = (id) => {
-        const listItems = items.map((item) => item.id === id ? {...item, checked: !item.checked} : item)
-        setItems(listItems)
-        localStorage.setItem("todo_list", JSON.stringify(listItems))
-    }
+  const handleDelete = (id) => {
+    const updateItems = items.filter((item) => item.id !== id);
+    setItems(updateItems);
+  };
 
-    const handleDelete = (id) => {
-        const updateItems = items.filter((item) => item.id !== id)
-        setItems(updateItems)
-        localStorage.setItem("todo_list", JSON.stringify(updateItems))
-    }
-
-    const handleSubmit = (e) =>{
-      e.preventDefault()
-      if(!newItem) return;
-      console.log(newItem)
-      addItem (newItem)
-      setNewItem('')
-    }
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!newItem) return;
+    addItem(newItem);
+    setNewItem('');
+  };
 
   return (
     <div className="App">
-         <Header />
-         <AddItem 
-          newItem = {newItem}
-          setNewItem = {setNewItem}
-          handleSubmit = {handleSubmit}
-         />
-         <SearchItem
-            search = {search}
-            setSearch = {setSearch}
-         />
-          <Content 
-            items={items.filter(item => (item.item.toLowerCase()).includes(search.toLowerCase()))}
-            handleCheck={handleCheck}
-            handleDelete={handleDelete}
-          />
-          <Footer
-         length = {items.length}/>
+      <Header />
+      <AddItem 
+        newItem={newItem}
+        setNewItem={setNewItem}
+        handleSubmit={handleSubmit}
+      />
+      <SearchItem 
+        search={search}
+        setSearch={setSearch}
+      />
+      {/* Safeguard against null and undefined in items and item.item */}
+      <main>
+        {isLoading && <p>Loading..</p>}
+        {fetchError && <p>{`${fetchError}`}</p>}
+        {!isLoading && !fetchError &&
+        <Content 
+          items={(items || []).filter(item => item.item && item.item.toLowerCase().includes(search.toLowerCase()))}
+          handleCheck={handleCheck}
+          handleDelete={handleDelete}
+        />
+      }
+      </main>
+      <Footer length={items.length} />
     </div>
   );
 }
 
-
 export default App;
-
